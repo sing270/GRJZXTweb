@@ -261,6 +261,7 @@
                         <select id="filter-month"
                             class="px-4 py-2 border border-gray-300 rounded-lg input-focus transition-custom">
                             <option value="all">全部时间</option>
+                            <!-- 动态生成月份选项 -->
                             <option value="lastYear">去年</option>
                             <option value="firstHalf">上半年</option>
                             <option value="lastQuarter">上季度</option>
@@ -472,6 +473,7 @@
                     <i class="fa fa-exclamation-triangle text-red-500 text-2xl"></i>
                 </div>
                 <h3 class="text-lg font-bold">确认删除</h3>
+                <p class="text-gray-500 mt-2">你确定要删除这条记录吗？此操作无法撤销。</p>
             </div>
             <div class="flex justify-center space-x-4">
                 <button type="button" id="cancel-delete"
@@ -480,7 +482,7 @@
                 </button>
                 <button type="button" id="confirm-delete"
                     class="px-6 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-custom">
-                    确认删除
+                    <i class="fa fa-trash mr-1"></i>确认删除
                 </button>
             </div>
         </div>
@@ -493,8 +495,20 @@
         let currentFilterTime = 'all';
         let currentSearchQuery = '';
         let selectedRecordId = null;
-
+        
         document.addEventListener('DOMContentLoaded', function () {
+            // 获取当前日期和时间
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            // 设置日期和时间输入框的值
+            document.getElementById('date').value = `${year}-${month}-${day}`;
+            document.getElementById('time').value = `${hours}:${minutes}`;
+
             // 获取类型单选框和类别下拉框元素
             const typeRadios = document.querySelectorAll('input[name="type"]');
             const categorySelect = document.getElementById('category');
@@ -604,6 +618,18 @@
                 alert('记录已保存');
                 fetchRecords(); // 刷新数据
                 document.getElementById('record-form').reset();
+
+                // 重新设置日期和时间输入框的值
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+
+                document.getElementById('date').value = `${year}-${month}-${day}`;
+                document.getElementById('time').value = `${hours}:${minutes}`;
+
             } catch (error) {
                 alert('保存失败: ' + error.message);
             }
@@ -630,13 +656,14 @@
             if (filteredRecords.length === 0) {
                 tableBody.innerHTML = `
                     <tr class="text-center">
-                        <td colspan="6" class="px-6 py-10 text-gray-500">暂无记录</td>
+                        <td colspan="7" class="px-6 py-10 text-gray-500">暂无记录</td>
                     </tr>
                 `;
             } else {
-                filteredRecords.forEach(record => {
+                filteredRecords.forEach((record, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
+                        <td class="px-6 py-4">${index + 1}</td>
                         <td class="px-6 py-4">${record.date} ${record.time}</td>
                         <td class="px-6 py-4">${record.purpose}</td>
                         <td class="px-6 py-4">${record.category}</td>
@@ -654,7 +681,24 @@
                     tableBody.appendChild(row);
                 });
             }
+
+
+            // 更新分页信息
+            const recordStartElement = document.getElementById('record-start');
+            const recordEndElement = document.getElementById('record-end');
+            const recordTotalElement = document.getElementById('record-total');
+
+            if (filteredRecords.length === 0) {
+                recordStartElement.textContent = '0';
+                recordEndElement.textContent = '0';
+                recordTotalElement.textContent = '0';
+            } else {
+                recordStartElement.textContent = '1';
+                recordEndElement.textContent = filteredRecords.length;
+                recordTotalElement.textContent = filteredRecords.length;
+            }
         }
+
 
         // 判断时间是否在范围内
         function isTimeInRange(dateStr, filterTime) {
@@ -727,38 +771,38 @@
 
         // 打开编辑模态框
         function openEditModal(id) {
-            const record = records.find(r => r.id === id);
+            selectedRecordId = id;
+            const record = records.find(record => record.id === id);
             if (record) {
-                selectedRecordId = id;
-                document.getElementById('edit-id').value = id;
+                document.getElementById('edit-id').value = record.id;
                 document.getElementById('edit-purpose').value = record.purpose;
                 document.getElementById('edit-amount').value = record.amount;
-                const editTypeRadios = document.querySelectorAll('input[name="edit-type"]');
-                editTypeRadios.forEach(radio => {
-                    radio.checked = radio.value === record.type;
-                });
+                document.querySelector(`input[name="edit-type"][value="${record.type}"]`).checked = true;
                 document.getElementById('edit-category').value = record.category;
                 document.getElementById('edit-date').value = record.date;
                 document.getElementById('edit-time').value = record.time;
                 document.getElementById('edit-remark').value = record.remark;
-                document.getElementById('edit-modal').classList.remove('hidden');
+
+                // 显示编辑模态框
+                document.getElementById('edit-modal').style.display = 'flex';
             }
         }
 
         // 关闭编辑模态框
         document.getElementById('close-edit-modal').addEventListener('click', function () {
-            document.getElementById('edit-modal').classList.add('hidden');
+            document.getElementById('edit-modal').style.display = 'none';
         });
 
         // 取消编辑
         document.getElementById('cancel-edit').addEventListener('click', function () {
-            document.getElementById('edit-modal').classList.add('hidden');
+            document.getElementById('edit-modal').style.display = 'none';
         });
 
         // 保存编辑
         document.getElementById('edit-form').addEventListener('submit', async function (event) {
             event.preventDefault();
             const formData = {
+                id: selectedRecordId,
                 purpose: document.getElementById('edit-purpose').value,
                 amount: parseFloat(document.getElementById('edit-amount').value),
                 type: document.querySelector('input[name="edit-type"]:checked').value,
@@ -775,24 +819,24 @@
                     body: JSON.stringify(formData)
                 });
 
-                if (!response.ok) throw new Error('修改失败');
-                alert('记录已修改');
+                if (!response.ok) throw new Error('更新失败');
+                alert('记录已更新');
                 fetchRecords(); // 刷新数据
-                document.getElementById('edit-modal').classList.add('hidden');
+                document.getElementById('edit-modal').style.display = 'none';
             } catch (error) {
-                alert('修改失败: ' + error.message);
+                alert('更新失败: ' + error.message);
             }
         });
 
-        // 打开删除模态框
+        // 打开删除确认模态框
         function openDeleteModal(id) {
             selectedRecordId = id;
-            document.getElementById('delete-modal').classList.remove('hidden');
+            document.getElementById('delete-modal').style.display = 'flex';
         }
 
         // 取消删除
         document.getElementById('cancel-delete').addEventListener('click', function () {
-            document.getElementById('delete-modal').classList.add('hidden');
+            document.getElementById('delete-modal').style.display = 'none';
         });
 
         // 确认删除
@@ -805,14 +849,196 @@
                 if (!response.ok) throw new Error('删除失败');
                 alert('记录已删除');
                 fetchRecords(); // 刷新数据
-                document.getElementById('delete-modal').classList.add('hidden');
+                document.getElementById('delete-modal').style.display = 'none';
             } catch (error) {
                 alert('删除失败: ' + error.message);
             }
         });
 
-        // 页面加载时获取记录
-        window.addEventListener('load', fetchRecords);
+        // 获取所有记录
+        async function fetchRecords() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error('获取记录时出错');
+                }
+                records = await response.json();
+                // 更新表格和统计信息
+                updateTable();
+                updateStatistics();
+                // 新增：绘制收支汇总图表
+                drawCharts(); 
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // 绘制收支汇总图表
+        function drawCharts() {
+            // 计算统计数据
+            const { incomeTrend, expenseTrend, incomeRatio, expenseRatio, incomeCategoryData, expenseCategoryData } = calculateStatistics();
+
+            // 收支趋势图
+            const trendChartCtx = document.getElementById('trend-chart').getContext('2d');
+            new Chart(trendChartCtx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(incomeTrend),
+                    datasets: [
+                        {
+                            label: '收入',
+                            data: Object.values(incomeTrend),
+                            borderColor: 'green',
+                            fill: false
+                        },
+                        {
+                            label: '支出',
+                            data: Object.values(expenseTrend),
+                            borderColor: 'red',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: '收支趋势'
+                    }
+                }
+            });
+
+            // 收支比例图
+            const ratioChartCtx = document.getElementById('ratio-chart').getContext('2d');
+            new Chart(ratioChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['收入', '支出'],
+                    datasets: [
+                        {
+                            data: [incomeRatio, expenseRatio],
+                            backgroundColor: ['green', 'red']
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: '本月收支比例'
+                    }
+                }
+            });
+
+            // 收入分类统计
+            const incomeCategoryChartCtx = document.getElementById('income-category-chart').getContext('2d');
+            new Chart(incomeCategoryChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(incomeCategoryData),
+                    datasets: [
+                        {
+                            label: '收入分类统计',
+                            data: Object.values(incomeCategoryData),
+                            backgroundColor: 'green'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: '收入分类统计'
+                    }
+                }
+            });
+
+            // 支出分类统计
+            const expenseCategoryChartCtx = document.getElementById('expense-category-chart').getContext('2d');
+            new Chart(expenseCategoryChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(expenseCategoryData),
+                    datasets: [
+                        {
+                            label: '支出分类统计',
+                            data: Object.values(expenseCategoryData),
+                            backgroundColor: 'red'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: '支出分类统计'
+                    }
+                }
+            });
+        }
+
+        // 计算统计数据
+        function calculateStatistics() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+
+            const incomeTrend = {};
+            const expenseTrend = {};
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const incomeCategoryData = {};
+            const expenseCategoryData = {};
+
+            records.forEach(record => {
+                const recordDate = new Date(record.date);
+                const recordYear = recordDate.getFullYear();
+                const recordMonth = recordDate.getMonth() + 1;
+
+                if (recordYear === currentYear) {
+                    if (record.type === 'income') {
+                        if (!incomeTrend[recordMonth]) {
+                            incomeTrend[recordMonth] = 0;
+                        }
+                        incomeTrend[recordMonth] += record.amount;
+                        totalIncome += record.amount;
+
+                        if (!incomeCategoryData[record.category]) {
+                            incomeCategoryData[record.category] = 0;
+                        }
+                        incomeCategoryData[record.category] += record.amount;
+                    } else {
+                        if (!expenseTrend[recordMonth]) {
+                            expenseTrend[recordMonth] = 0;
+                        }
+                        expenseTrend[recordMonth] += record.amount;
+                        totalExpense += record.amount;
+
+                        if (!expenseCategoryData[record.category]) {
+                            expenseCategoryData[record.category] = 0;
+                        }
+                        expenseCategoryData[record.category] += record.amount;
+                    }
+                }
+            });
+
+            const total = totalIncome + totalExpense;
+            const incomeRatio = total === 0 ? 0 : (totalIncome / total) * 100;
+            const expenseRatio = total === 0 ? 0 : (totalExpense / total) * 100;
+
+            return {
+                incomeTrend,
+                expenseTrend,
+                incomeRatio,
+                expenseRatio,
+                incomeCategoryData,
+                expenseCategoryData
+            };
+        }
+
+
+        // 页面加载完成后获取所有记录
+        fetchRecords();
     </script>
 </body>
 
