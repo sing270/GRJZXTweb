@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
         item.addEventListener('click', function() {
             const targetId = this.getAttribute('data-tab');
 
+            localStorage.setItem('activeTabId', targetId);
+
             contentBoxes.forEach(box => {
                 box.classList.remove('active');
                 box.style.display = 'none';
@@ -25,15 +27,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    const savedTabId = localStorage.getItem('activeTabId');
+    let initialTabId = null;
+    
+    if (savedTabId) {
+        const savedBox = document.getElementById(savedTabId);
+        if (savedBox) {
+            initialTabId = savedTabId;
+        }
+    }
+
     if (contentBoxes.length > 0) {
         contentBoxes.forEach(box => {
+            box.classList.remove('active');
             box.style.display = 'none';
         });
-        contentBoxes[0].style.display = 'block';
-        contentBoxes[0].classList.add('active');
+
+        const initialBox = initialTabId ? document.getElementById(initialTabId) : contentBoxes[0];
+        initialBox.style.display = 'block';
+        initialBox.classList.add('active');
     }
+
     if (navItems.length > 0) {
-        navItems[0].classList.add('active');
+        navItems.forEach(nav => nav.classList.remove('active'));
+        const initialNav = initialTabId 
+            ? document.querySelector(`.nav i[data-tab="${initialTabId}"]`) 
+            : navItems[0];
+        initialNav.classList.add('active');
     }
 
     initDateTime();
