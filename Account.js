@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const navItems = document.querySelectorAll('.nav i[data-tab]');
+    const navItems = document.querySelectorAll('.nav p[data-tab]');
     const contentBoxes = document.querySelectorAll('.card .box');
     
     navItems.forEach(item => {
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (navItems.length > 0) {
         navItems.forEach(nav => nav.classList.remove('active'));
         const initialNav = initialTabId 
-            ? document.querySelector(`.nav i[data-tab="${initialTabId}"]`) 
+            ? document.querySelector(`.nav p[data-tab="${initialTabId}"]`) 
             : navItems[0];
         initialNav.classList.add('active');
     }
@@ -363,4 +363,5 @@ function updateSummary() {
         }
     });
 }
+
 
