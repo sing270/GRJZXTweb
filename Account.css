@@ -35,8 +35,8 @@ header{
 .clock{
     margin-right: 50px;
     text-align: center;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 700;
 }
 .nav i{
     font-size: 18px;
@@ -132,7 +132,7 @@ main{
 .recodeReset{
     background-color: #4976ca;
     border-style: none;
-    padding: 0.3rem 3rem;
+    padding: 0.5rem 3rem;
     text-align: center;
     border-radius: 5px;
     font-style: 13px;
@@ -197,12 +197,23 @@ main{
     color: white;
     border-radius: 5px;
     padding: 0px 3px;
+    border-style: none;
+    height: 25px;
+    padding: 0rem 0.5rem;
 }
 .delete-btn{
     background-color: #d82626;
     color: white;
     border-radius: 5px;
     padding: 0px 3px;
+    border-style: none;
+    padding: 0.2rem 0.5rem;
+}
+.type-income{
+    color: #1ba61b;
+}
+.type-expense{
+    color: #ff0000;
 }
 footer{
     display: flex;
@@ -211,6 +222,3 @@ footer{
     color: rgb(199, 198, 198);
     font-size: 12px;
 }
-
-
-
