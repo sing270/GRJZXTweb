@@ -197,10 +197,10 @@ function loadRecords(filter = null) {
             <td>${record.date}</td>
             <td>${record.time}</td>
             <td>${record.source}</td>
-            <td class="${record.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+            <td class="${record.type === 'income' ? 'type-income' : 'type-expense'}">
                 ${record.type === 'income' ? '收入' : '支出'}
             </td>
-            <td class="${record.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+            <td class="${record.type === 'income' ? 'type-income' : 'type-expense'}">
                 ${record.type === 'income' ? '+' : '-'}${record.amount.toFixed(2)}
             </td>
             <td>${record.remark || '-'}</td>
@@ -327,3 +327,4 @@ function updateSummary() {
         }
     });
 }
+
